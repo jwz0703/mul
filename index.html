@@ -1,0 +1,176 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>班級212每週課表</title>
+    <style>
+        body {
+            font-family: '微軟正黑體', 'Microsoft JhengHei', '新細明體', sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        h1 {
+            background-color: #4a90e2;
+            color: white;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+            font-size: 1.5em;
+        }
+        .info {
+            background-color: #e8f0fe;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .schedule {
+            display: grid;
+            grid-template-columns: auto repeat(5, 1fr);
+            font-size: 0.9em;
+        }
+        .day, .time, .class {
+            padding: 5px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+        .day {
+            background-color: #4a90e2;
+            color: white;
+            font-weight: bold;
+        }
+        .time {
+            background-color: #f9f9f9;
+            font-weight: bold;
+        }
+        .class {
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .class:hover {
+            background-color: #e8f0fe;
+        }
+        .subject {
+            font-weight: bold;
+        }
+        .teacher {
+            font-size: 0.8em;
+            color: #666;
+        }
+        .footer {
+            text-align: center;
+            padding: 10px;
+            background-color: #4a90e2;
+            color: white;
+        }
+        .current-class {
+            background-color: #ffeb3b;
+        }
+        @media (max-width: 600px) {
+            .schedule {
+                font-size: 0.7em;
+            }
+            .day, .time, .class {
+                padding: 2px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>班級212每週課表</h1>
+        <div class="info">導師：李佳奇</div>
+        <div class="schedule">
+            <div class="time"></div>
+            <div class="day">星期一</div>
+            <div class="day">星期二</div>
+            <div class="day">星期三</div>
+            <div class="day">星期四</div>
+            <div class="day">星期五</div>
+        </div>
+        <div class="footer">課表使用時間: 08:30-09:06</div>
+    </div>
+
+    <script>
+        const schedule = [
+            {time: '08:10-09:00', classes: ['體育\n劉富聰', '英文\n王淑娟', '數學A\n李佳奇', '公民\n王啟洋', '體育\n劉富聰']},
+            {time: '09:10-10:00', classes: ['英文\n王淑娟', '人環(地)\n羅湘云', '公民\n王啟洋', '音樂\n洪瑋宣', '力學\n陳立群']},
+            {time: '10:20-11:10', classes: ['數學A\n李佳奇', '人環(生)\n曾婉寧', '歷史\n李靜茹', '英文\n王淑娟', '多元選修']},
+            {time: '11:20-12:10', classes: ['班會\n李佳奇', '動物體的構造與功能\n曾婉寧', '人環(地)\n羅湘云', '數學A\n李佳奇', '彈性學習(多元延伸)']},
+            {time: '13:20-14:10', classes: ['化學\n江宣昕', '歷史\n李靜茹', '彈性學習', '物理\n陳立群', '英文\n王淑娟']},
+            {time: '14:20-15:10', classes: ['化學\n江宣昕', '數學A\n李佳奇', '彈性學習', '物理\n陳立群', '國文\n林思妤']},
+            {time: '15:30-16:10', classes: ['國文\n林思妤', '國文\n林思妤', '社團活動', '國文\n林思妤', '物質與能量\n江宣昕']},
+            {time: '16:20-17:10', classes: ['', '', '', '', '']}
+        ];
+
+        const days = ['星期一', '星期二', '星期三', '星期四', '星期五'];
+        const scheduleContainer = document.querySelector('.schedule');
+
+        function getCurrentTimeSlot() {
+            const now = new Date();
+            const day = now.getDay();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            const currentTime = hours * 60 + minutes;
+
+            if (day === 0 || day === 6) return null; // 週末沒有課
+
+            for (let i = 0; i < schedule.length; i++) {
+                const [start, end] = schedule[i].time.split('-');
+                const [startHour, startMinute] = start.split(':').map(Number);
+                const [endHour, endMinute] = end.split(':').map(Number);
+                const slotStart = startHour * 60 + startMinute;
+                const slotEnd = endHour * 60 + endMinute;
+
+                if (currentTime >= slotStart && currentTime < slotEnd) {
+                    return { row: i, column: day - 1 };
+                }
+            }
+
+            return null;
+        }
+
+        function highlightCurrentClass() {
+            const currentSlot = getCurrentTimeSlot();
+            const classes = document.querySelectorAll('.class');
+            classes.forEach(c => c.classList.remove('current-class'));
+
+            if (currentSlot) {
+                const index = currentSlot.row * 5 + currentSlot.column;
+                classes[index].classList.add('current-class');
+            }
+        }
+
+        schedule.forEach(slot => {
+            const time = document.createElement('div');
+            time.className = 'time';
+            time.textContent = slot.time;
+            scheduleContainer.appendChild(time);
+            
+            slot.classes.forEach((classInfo, index) => {
+                const classDiv = document.createElement('div');
+                classDiv.className = 'class';
+                const [subject, teacher] = classInfo.split('\n');
+                classDiv.innerHTML = `<div class="subject">${subject}</div>${teacher ? `<div class="teacher">${teacher}</div>` : ''}`;
+                classDiv.title = `${days[index]} ${slot.time}`;
+                classDiv.onclick = () => alert(`${days[index]} ${slot.time}\n${classInfo}`);
+                scheduleContainer.appendChild(classDiv);
+            });
+        });
+
+        highlightCurrentClass();
+        setInterval(highlightCurrentClass, 60000); // 每分鐘更新一次
+    </script>
+</body>
+</html>
